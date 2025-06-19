@@ -1,103 +1,251 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { Article } from "@/components/Article";
+import { Contact } from "@/components/Contact";
+import { Education } from "@/components/Education";
+import { Footer } from "@/components/Footer";
+import { Intro } from "@/components/Intro";
+import { Nav } from "@/components/Nav";
+import { Project } from "@/components/Project";
+import { Skill } from "@/components/Skill";
+import { Social } from "@/components/Social";
+import { allThemes } from "@/lib/themes";
+import { cn } from "@/lib/utils";
+import { useRef, useEffect, useState } from "react";
+
+// Simple animated background with moving dots/stars
+
+type AnimatedBackgroundProps = {
+  containerRef: React.RefObject<HTMLDivElement | null>;
+};
+
+function AnimatedBackground({ containerRef }: AnimatedBackgroundProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    let width = 0;
+    let height = 0;
+
+    function resize() {
+      if (containerRef.current) {
+        const bounds = containerRef.current.getBoundingClientRect();
+        width = bounds.width;
+        height = containerRef.current.scrollHeight;
+        canvas!.width = width;
+        canvas!.height = height;
+      }
+    }
+
+    resize();
+    window.addEventListener("resize", resize);
+
+    const dots = Array.from({ length: 60 }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      r: Math.random() * 2 + 1,
+      speed: Math.random() * 2 + 1, // 🚀 much faster
+      alpha: Math.random() * 0.5 + 0.5,
+    }));
+
+    const stars = Array.from({ length: 30 }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      r: Math.random() * 1.5 + 0.5,
+      twinkle: Math.random() * 0.15 + 0.05, // ✨ twinkle faster
+      alpha: Math.random() * 0.5 + 0.5,
+      phase: Math.random() * Math.PI * 2,
+    }));
+
+    const sprinkles = Array.from({ length: 20 }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      len: Math.random() * 18 + 8,
+      angle: Math.random() * Math.PI * 2,
+      speed: Math.random() * 2.5 + 1.2, // 🚀 super fast
+      color: `hsl(${Math.floor(Math.random() * 360)}, 100%, 40%)`, // 🎨 much darker
+      alpha: Math.random() * 0.5 + 0.5,
+    }));
+
+    const shapes = Array.from({ length: 10 }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      size: Math.random() * 18 + 8,
+      speed: Math.random() * 1.5 + 0.8, // 🚀 significantly faster
+      angle: Math.random() * Math.PI * 2,
+      type: Math.random() > 0.5 ? "triangle" : "diamond",
+      color: `hsl(${Math.floor(Math.random() * 360)}, 90%, 35%)`, // 🌈 dark and rich
+      alpha: Math.random() * 0.4 + 0.4,
+    }));
+
+    function draw() {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, width, height);
+
+      dots.forEach((dot) => {
+        ctx.globalAlpha = dot.alpha;
+        ctx.beginPath();
+        ctx.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2);
+        ctx.fillStyle = "#fff";
+        ctx.shadowColor = "#fff";
+        ctx.shadowBlur = 8;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        dot.y += dot.speed;
+        if (dot.y > height) {
+          dot.y = -dot.r;
+          dot.x = Math.random() * width;
+        }
+      });
+
+      stars.forEach((star) => {
+        star.phase += star.twinkle;
+        const twinkleAlpha = star.alpha + Math.sin(star.phase) * 0.3;
+        ctx.globalAlpha = Math.max(0, Math.min(1, twinkleAlpha));
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+        ctx.fillStyle = "#fffbe9";
+        ctx.shadowColor = "#fffbe9";
+        ctx.shadowBlur = 12;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
+      sprinkles.forEach((sprinkle) => {
+        ctx.save();
+        ctx.globalAlpha = sprinkle.alpha;
+        ctx.translate(sprinkle.x, sprinkle.y);
+        ctx.rotate(sprinkle.angle);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(sprinkle.len, 0);
+        ctx.strokeStyle = sprinkle.color;
+        ctx.lineWidth = 2;
+        ctx.shadowColor = sprinkle.color;
+        ctx.shadowBlur = 8;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        ctx.restore();
+
+        sprinkle.x += Math.cos(sprinkle.angle) * sprinkle.speed;
+        sprinkle.y += Math.sin(sprinkle.angle) * sprinkle.speed;
+        if (
+          sprinkle.x < -20 ||
+          sprinkle.x > width + 20 ||
+          sprinkle.y < -20 ||
+          sprinkle.y > height + 20
+        ) {
+          sprinkle.x = Math.random() * width;
+          sprinkle.y = Math.random() * height;
+        }
+      });
+
+      shapes.forEach((shape) => {
+        ctx.save();
+        ctx.globalAlpha = shape.alpha;
+        ctx.translate(shape.x, shape.y);
+        ctx.rotate(shape.angle);
+        ctx.fillStyle = shape.color;
+        ctx.shadowColor = shape.color;
+        ctx.shadowBlur = 10;
+        if (shape.type === "triangle") {
+          ctx.beginPath();
+          ctx.moveTo(0, -shape.size / 2);
+          ctx.lineTo(-shape.size / 2, shape.size / 2);
+          ctx.lineTo(shape.size / 2, shape.size / 2);
+          ctx.closePath();
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(0, -shape.size / 2);
+          ctx.lineTo(shape.size / 2, 0);
+          ctx.lineTo(0, shape.size / 2);
+          ctx.lineTo(-shape.size / 2, 0);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.shadowBlur = 0;
+        ctx.restore();
+
+        shape.y += shape.speed;
+        if (shape.y > height + 20) {
+          shape.y = -20;
+          shape.x = Math.random() * width;
+        }
+      });
+
+      ctx.globalAlpha = 1;
+      animationFrameId = requestAnimationFrame(draw);
+    }
+
+    animationFrameId = requestAnimationFrame(draw);
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [containerRef]);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        zIndex: 0,
+        pointerEvents: "none",
+      }}
+    />
+  );
+}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+export default function Portfolio() {
+  useEffect(() => {
+    document.title = "Gulshan Baraik | Full Stack Developer";
+  }, []);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const themes = allThemes;
+  const [themeIndex, setThemeIndex] = useState(0);
+  const currentTheme = themes[themeIndex];
+
+  const toggleTheme = () => setThemeIndex((prev) => (prev + 1) % themes.length);
+
+  return (
+    <div
+      ref={containerRef}
+      className={cn(
+        "relative min-h-screen p-4 md:p-10 transition-colors duration-500 overflow-hidden",
+        currentTheme.isDark
+          ? `bg-gradient-to-br ${currentTheme.gradient} text-white`
+          : currentTheme.light
+      )}
+    >
+      <AnimatedBackground containerRef={containerRef} />
+
+      <Nav
+        isMobileMenuOpen={isMobileMenuOpen}
+        setIsMobileMenuOpen={setIsMobileMenuOpen}
+        currentTheme={currentTheme}
+        toggleTheme={toggleTheme}
+      />
+      <Intro currentTheme={currentTheme} />
+      <Social currentTheme={currentTheme} />
+      <Project currentTheme={currentTheme} />
+      <Skill currentTheme={currentTheme} />
+      <Article currentTheme={currentTheme} />
+      <Education currentTheme={currentTheme} />
+      <Contact currentTheme={currentTheme} />
+      <Footer currentTheme={currentTheme} />
     </div>
   );
 }
