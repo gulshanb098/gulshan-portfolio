@@ -1,7 +1,8 @@
 import { Themes } from "@/lib/themes";
-import React, { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { BookOpen, ChevronRight } from "lucide-react";
+import React, { useRef, useState } from "react";
 
 interface ArticleCard {
   id: number;
@@ -71,7 +72,7 @@ const articles: ArticleCard[] = [
   },
   {
     id: 6,
-    image: "/messenger.png",
+    image: "/article6.png",
     title: "What is ExecuteScalar() method in ADO.NET",
     platform: "Medium",
     readTime: "3 min read",
@@ -212,7 +213,6 @@ export const Article: React.FC<Props> = ({ currentTheme }) => {
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5, delay: idx * 0.08 }}
           >
-            {/* Photo section (more space) */}
             <div
               className="relative"
               style={{
@@ -220,7 +220,6 @@ export const Article: React.FC<Props> = ({ currentTheme }) => {
                 height: 210,
               }}
             />
-            {/* Overlay info bar */}
             <div
               className={cn(
                 "absolute left-0 right-0 top-[170px] px-6 py-3 flex flex-col gap-1 bg-black/80",
@@ -250,7 +249,6 @@ export const Article: React.FC<Props> = ({ currentTheme }) => {
                 </a>
               </div>
             </div>
-            {/* Content section (less space) */}
             <div className={cn("p-4 text-sm flex-1", textColor, "mt-[90px]")}>
               {expanded === article.id ? (
                 <>
@@ -282,6 +280,26 @@ export const Article: React.FC<Props> = ({ currentTheme }) => {
             </div>
           </motion.div>
         ))}
+
+        {/* Explore More Button */}
+        <div className="shrink-0 snap-start w-[280px] flex items-center justify-center">
+          <motion.a
+            href="https://www.geeksforgeeks.org/user/night_fury1/contributions/?type=articles"
+            target="_blank"
+            rel="noopener noreferrer"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={cn(
+              "flex items-center gap-2 px-5 py-2 rounded-full shadow-md transition-all duration-300",
+              currentTheme.card,
+              currentTheme.isDark ? "text-gray-200" : "text-gray-800"
+            )}
+          >
+            <BookOpen className="w-5 h-5" />
+            <span className="text-md font-medium">Explore More</span>
+            <ChevronRight className="w-4 h-4" />
+          </motion.a>
+        </div>
       </div>
       {/* Optimized Slider Dots */}
       <div className="flex justify-center gap-2 mt-6">
